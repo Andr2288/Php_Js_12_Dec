@@ -14,7 +14,7 @@ class DatabaseManager {
             echo "🔌 Підключення до MySQL сервера...\n";
 
             // Підключення без вказівки БД для створення/видалення
-            $dsn = "mysql:host=localhost;charset=utf8mb4";
+            $dsn = "mysql:host=127.0.1.15;port=3306;charset=utf8mb4";
             $this->pdo = new PDO($dsn, 'root', '');
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 

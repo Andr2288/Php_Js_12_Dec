@@ -1,7 +1,7 @@
 <?php
-// Database configuration for OpenServer
+// Database configuration for OpenServer with virtual IP
 class DatabaseConfig {
-    private static $host = 'localhost';
+    private static $host = '127.0.1.15:3306';  // Virtual IP from netstat
     private static $dbname = 'theater_booking';
     private static $username = 'root';
     private static $password = '';
