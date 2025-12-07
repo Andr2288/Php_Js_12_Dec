@@ -1,8 +1,8 @@
 :root {
-  --header-bg: #1a1618;
-  --header-text: #ffffff;
-  --header-red: #c80000;
-  --transition: 0.3s ease;
+    --header-bg: #1a1618;
+    --header-text: #ffffff;
+    --header-red: #c80000;
+    --transition: 0.3s ease;
 }
 /* ХЕДЕР */
 .theater-header {
@@ -14,7 +14,7 @@
     padding: 18px 0;          /* трохи збільшена висота */
     z-index: 999;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-    font-family: 'Verdana', system-ui, sans-serif;
+    font-family: 'Rubik', system-ui, sans-serif;
 }
 
 .theater-header__inner {
