@@ -23,9 +23,9 @@ class DatabaseManager {
         } catch (PDOException $e) {
             echo "❌ Помилка підключення до MySQL: " . $e->getMessage() . "\n";
             echo "💡 Переконайтесь, що:\n";
-            echo "   - OpenServer запущений\n";
+            echo "   - OSPanel запущений\n";
             echo "   - MySQL сервіс активний\n";
-            echo "   - Використовуються правильні налаштування (localhost, root, без пароля)\n\n";
+            echo "   - Використовуються правільні налаштування (localhost, root, без пароля)\n\n";
 
             echo "Натисніть Enter для виходу...";
             if (php_sapi_name() === 'cli') {
@@ -53,6 +53,8 @@ class DatabaseManager {
     }
 
     private function createTables() {
+        echo "  📋 Створюємо таблиці...\n";
+
         $tables = [
             // Users table
             "CREATE TABLE IF NOT EXISTS users (
@@ -109,17 +111,39 @@ class DatabaseManager {
             $this->pdo->exec($sql);
         }
 
-        // Створення індексів
-        $indexes = [
-            "CREATE INDEX IF NOT EXISTS idx_shows_date ON shows(date)",
-            "CREATE INDEX IF NOT EXISTS idx_shows_scene_type ON shows(scene_type)",
-            "CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id)",
-            "CREATE INDEX IF NOT EXISTS idx_bookings_show_id ON bookings(show_id)",
-            "CREATE INDEX IF NOT EXISTS idx_user_interactions_user_id ON user_interactions(user_id)"
-        ];
+        echo "  🔗 Створюємо індекси...\n";
 
-        foreach ($indexes as $sql) {
-            $this->pdo->exec($sql);
+        // Створення індексів з правильним синтаксисом MySQL
+        $this->createIndexIfNotExists('idx_shows_date', 'shows', 'date');
+        $this->createIndexIfNotExists('idx_shows_scene_type', 'shows', 'scene_type');
+        $this->createIndexIfNotExists('idx_bookings_user_id', 'bookings', 'user_id');
+        $this->createIndexIfNotExists('idx_bookings_show_id', 'bookings', 'show_id');
+        $this->createIndexIfNotExists('idx_user_interactions_user_id', 'user_interactions', 'user_id');
+    }
+
+    private function createIndexIfNotExists($indexName, $tableName, $columnName) {
+        try {
+            // Перевіряємо чи існує індекс
+            $stmt = $this->pdo->prepare("
+                SELECT COUNT(*) as count 
+                FROM information_schema.statistics 
+                WHERE table_schema = DATABASE() 
+                AND table_name = ? 
+                AND index_name = ?
+            ");
+            $stmt->execute([$tableName, $indexName]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($result['count'] == 0) {
+                // Індекс не існує, створюємо
+                $sql = "CREATE INDEX {$indexName} ON {$tableName}({$columnName})";
+                $this->pdo->exec($sql);
+                echo "    ✅ Індекс {$indexName} створено\n";
+            } else {
+                echo "    ⏭️ Індекс {$indexName} вже існує\n";
+            }
+        } catch (PDOException $e) {
+            echo "    ⚠️ Помилка створення індексу {$indexName}: " . $e->getMessage() . "\n";
         }
     }
 
@@ -212,7 +236,7 @@ class DatabaseManager {
                 ['Ліниві та ніжні', '2025-01-12 19:00:00', 'main', 600, 460, 320, 'Комедія', 'Сучасність', 'images/lazyandtender.jpg'],
                 ['Кабаре', '2025-01-16 17:00:00', 'main', 650, 525, 400, 'Мюзикл', 'XX століття', 'images/cabare.jpg'],
                 ['Енеїда', '2025-01-23 18:00:00', 'main', 500, 400, 300, 'Епос', 'Античність', 'images/eneida.jpg'],
-                ['Готель двух світів', '2025-01-27 19:00:00', 'chamber', 400, 325, 250, 'Містика', 'Сучасність', 'images/thehoteloftwoworlds.jpg'],
+                ['Готель двох світів', '2025-01-27 19:00:00', 'chamber', 400, 325, 250, 'Містика', 'Сучасність', 'images/thehoteloftwoworlds.jpg'],
                 ['Процес', '2025-01-31 17:30:00', 'main', 500, 425, 350, 'Драма', 'XX століття', 'images/process.jpg']
             ];
 
