@@ -1,27 +1,21 @@
 <?php
 session_start();
 
-// CORS headers
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: http://theater-booking.local');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Credentials: true');
-
-// Handle preflight request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
+require_once '../config/cors.php';
 require_once '../config/database.php';
 
+// Set CORS headers
+setCorsHeaders();
+handlePreflight();
+
+// Check request method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
     exit;
 }
 
+// Get and validate input
 $data = json_decode(file_get_contents('php://input'), true);
 
 $email = trim($data['email'] ?? '');
@@ -29,6 +23,7 @@ $password = $data['password'] ?? '';
 
 // Validation
 if (empty($email) || empty($password)) {
+    http_response_code(400);
     echo json_encode(['error' => 'Email and password are required']);
     exit;
 }
@@ -36,19 +31,21 @@ if (empty($email) || empty($password)) {
 try {
     $pdo = DatabaseConfig::getConnection();
 
-    $stmt = $pdo->prepare("SELECT id, email, password, name FROM users WHERE email = ?");
+    $stmt = $pdo->prepare("SELECT id, email, password, name, created_at FROM users WHERE email = ?");
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
     if (!$user || !password_verify($password, $user['password'])) {
+        http_response_code(401);
         echo json_encode(['error' => 'Invalid email or password']);
         exit;
     }
 
-    // Set session
+    // Set session variables
     $_SESSION['user_id'] = $user['id'];
     $_SESSION['user_email'] = $user['email'];
     $_SESSION['user_name'] = $user['name'];
+    $_SESSION['user_created_at'] = $user['created_at'];
 
     echo json_encode([
         'success' => true,
@@ -56,11 +53,14 @@ try {
         'user' => [
             'id' => $user['id'],
             'email' => $user['email'],
-            'name' => $user['name']
+            'name' => $user['name'],
+            'created_at' => $user['created_at']
         ]
     ]);
 
 } catch (PDOException $e) {
-    echo json_encode(['error' => 'Login failed']);
+    error_log("Login error: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Login failed. Please try again.']);
 }
 ?>

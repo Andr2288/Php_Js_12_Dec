@@ -1,19 +1,12 @@
 <?php
-// CORS headers
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: http://theater-booking.local');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Credentials: true');
-
-// Handle preflight request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
+require_once '../config/cors.php';
 require_once '../config/database.php';
 
+// Set CORS headers
+setCorsHeaders();
+handlePreflight();
+
+// Check request method
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
@@ -28,6 +21,7 @@ try {
     $genre = $_GET['genre'] ?? null;
     $dateFrom = $_GET['date_from'] ?? null;
 
+    // Build SQL query
     $sql = "SELECT * FROM shows WHERE 1=1";
     $params = [];
 
@@ -52,9 +46,11 @@ try {
     $stmt->execute($params);
     $shows = $stmt->fetchAll();
 
+    // Return shows
     echo json_encode($shows);
 
 } catch (PDOException $e) {
+    error_log("Shows fetch error: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['error' => 'Failed to fetch shows']);
 }

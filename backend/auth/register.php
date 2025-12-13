@@ -1,27 +1,21 @@
 <?php
 session_start();
 
-// CORS headers
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: http://theater-booking.local');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Credentials: true');
-
-// Handle preflight request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
-
+require_once '../config/cors.php';
 require_once '../config/database.php';
 
+// Set CORS headers
+setCorsHeaders();
+handlePreflight();
+
+// Check request method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
     exit;
 }
 
+// Get and validate input
 $data = json_decode(file_get_contents('php://input'), true);
 
 $email = trim($data['email'] ?? '');
@@ -30,16 +24,19 @@ $name = trim($data['name'] ?? '');
 
 // Validation
 if (empty($email) || empty($password) || empty($name)) {
+    http_response_code(400);
     echo json_encode(['error' => 'All fields are required']);
     exit;
 }
 
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
     echo json_encode(['error' => 'Invalid email format']);
     exit;
 }
 
 if (strlen($password) < 8) {
+    http_response_code(400);
     echo json_encode(['error' => 'Password must be at least 8 characters']);
     exit;
 }
@@ -52,6 +49,7 @@ try {
     $stmt->execute([$email]);
 
     if ($stmt->fetch()) {
+        http_response_code(409);
         echo json_encode(['error' => 'Email already registered']);
         exit;
     }
@@ -64,22 +62,32 @@ try {
 
     $userId = $pdo->lastInsertId();
 
-    // Set session
+    // Get created_at timestamp
+    $stmt = $pdo->prepare("SELECT created_at FROM users WHERE id = ?");
+    $stmt->execute([$userId]);
+    $userCreatedAt = $stmt->fetchColumn();
+
+    // Set session variables
     $_SESSION['user_id'] = $userId;
     $_SESSION['user_email'] = $email;
     $_SESSION['user_name'] = $name;
+    $_SESSION['user_created_at'] = $userCreatedAt;
 
+    http_response_code(201);
     echo json_encode([
         'success' => true,
         'message' => 'Registration successful',
         'user' => [
             'id' => $userId,
             'email' => $email,
-            'name' => $name
+            'name' => $name,
+            'created_at' => $userCreatedAt
         ]
     ]);
 
 } catch (PDOException $e) {
-    echo json_encode(['error' => 'Registration failed']);
+    error_log("Registration error: " . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['error' => 'Registration failed. Please try again.']);
 }
 ?>

@@ -1,19 +1,13 @@
 <?php
 session_start();
 
-// CORS headers
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: http://theater-booking.local');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-header('Access-Control-Allow-Credentials: true');
+require_once '../config/cors.php';
 
-// Handle preflight request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
+// Set CORS headers
+setCorsHeaders();
+handlePreflight();
 
+// Check request method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Method not allowed']);
@@ -21,6 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Destroy session
+$_SESSION = array();
+
+// Destroy session cookie
+if (isset($_COOKIE[session_name()])) {
+    setcookie(session_name(), '', time() - 3600, '/');
+}
+
 session_destroy();
 
 echo json_encode([
