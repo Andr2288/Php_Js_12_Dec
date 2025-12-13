@@ -152,11 +152,6 @@ const BookingConfirmationPage = () => {
 
                 {/* Actions */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <button className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-medium transition-colors flex items-center justify-center space-x-2">
-                        <Download size={20} />
-                        <span>Завантажити PDF</span>
-                    </button>
-                    
                     <Link 
                         to="/profile"
                         className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-medium transition-colors text-center"

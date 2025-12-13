@@ -1,8 +1,11 @@
 import { Calendar, MapPin, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
 import { axiosInstance } from "../lib/axios";
+import { useState } from "react";
 
 const ShowCard = ({ show }) => {
+    const [imageError, setImageError] = useState(false);
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('uk-UA', {
@@ -36,26 +39,88 @@ const ShowCard = ({ show }) => {
         trackInteraction('view');
     };
 
+    const handleImageError = () => {
+        setImageError(true);
+    };
+
+    // Красивий плейсхолдер на основі жанру
+    const getPlaceholderGradient = (genre) => {
+        const gradients = {
+            'Драма': 'from-purple-600 to-purple-800',
+            'Комедія': 'from-yellow-500 to-orange-600',
+            'Мюзикл': 'from-pink-500 to-red-600',
+            'Трагедія': 'from-gray-700 to-gray-900',
+            'Історична': 'from-amber-600 to-amber-800',
+            'Містика': 'from-indigo-600 to-purple-700',
+            'Епос': 'from-emerald-600 to-teal-700'
+        };
+        return gradients[genre] || 'from-red-500 to-red-700';
+    };
+
+    const getGenreEmoji = (genre) => {
+        const emojis = {
+            'Драма': '🎭',
+            'Комедія': '😄',
+            'Мюзикл': '🎵',
+            'Трагедія': '💔',
+            'Історична': '🏛️',
+            'Містика': '🔮',
+            'Епос': '⚔️'
+        };
+        return emojis[genre] || '🎭';
+    };
+
     return (
         <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group">
             {/* Poster Image */}
             <div className="relative h-80 bg-gray-200 overflow-hidden">
-                {show.poster ? (
+                {show.poster && !imageError ? (
                     <img
                         src={show.poster}
                         alt={show.title}
+                        onError={handleImageError}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                 ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                        <span className="text-4xl text-gray-400">🎭</span>
+                    <div className={`w-full h-full bg-gradient-to-br ${getPlaceholderGradient(show.genre)} flex items-center justify-center relative overflow-hidden`}>
+                        {/* Background Pattern */}
+                        <div className="absolute inset-0 opacity-10">
+                            <div className="w-full h-full" style={{
+                                backgroundImage: `repeating-linear-gradient(
+                                    45deg,
+                                    transparent,
+                                    transparent 10px,
+                                    rgba(255,255,255,0.1) 10px,
+                                    rgba(255,255,255,0.1) 20px
+                                )`
+                            }}></div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="text-center text-white z-10">
+                            <div className="text-6xl mb-4 animate-pulse">
+                                {getGenreEmoji(show.genre)}
+                            </div>
+                            <div className="text-lg font-semibold mb-2 px-4">
+                                {show.title}
+                            </div>
+                            <div className="text-sm opacity-90 uppercase tracking-wider">
+                                {show.genre}
+                            </div>
+                        </div>
+
+                        {/* Decorative elements */}
+                        <div className="absolute top-4 right-4 w-16 h-16 border-2 border-white/20 rounded-full"></div>
+                        <div className="absolute bottom-4 left-4 w-12 h-12 border-2 border-white/20 rounded-full"></div>
                     </div>
                 )}
 
-                {/* Genre badge */}
-                <div className="absolute top-3 right-3 bg-black/80 text-white px-3 py-1 rounded-full text-sm">
-                    {show.genre}
-                </div>
+                {/* Genre badge - тільки якщо є фото */}
+                {show.poster && !imageError && (
+                    <div className="absolute top-3 right-3 bg-black/80 text-white px-3 py-1 rounded-full text-sm">
+                        {show.genre}
+                    </div>
+                )}
             </div>
 
             {/* Show Info */}

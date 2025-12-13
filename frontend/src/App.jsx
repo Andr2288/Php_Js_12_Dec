@@ -10,6 +10,8 @@ import HomePage from "./pages/HomePage";
 import BookingPage from "./pages/BookingPage";
 import BookingConfirmationPage from "./pages/BookingConfirmationPage";
 import ShowDetailPage from "./pages/ShowDetailPage";
+import AboutPage from "./pages/AboutPage";
+import ContactsPage from "./pages/ContactsPage";
 
 import { useAuthStore } from "./store/useAuthStore";
 import { Loader } from "lucide-react";
@@ -21,12 +23,13 @@ const App = () => {
         checkAuth();
     }, [checkAuth]);
 
-    console.log("App render - authUser:", authUser, "isCheckingAuth:", isCheckingAuth);
-
     if (isCheckingAuth) {
         return (
             <div className="flex items-center justify-center h-screen bg-slate-50">
-                <Loader className="size-10 animate-spin text-red-600" />
+                <div className="text-center">
+                    <Loader className="size-10 animate-spin text-red-600 mx-auto mb-4" />
+                    <p className="text-gray-600">Завантаження...</p>
+                </div>
             </div>
         );
     }
@@ -64,6 +67,13 @@ const App = () => {
                     path="/booking-confirmation/:bookingId"
                     element={authUser ? <BookingConfirmationPage /> : <Navigate to="/login" replace />}
                 />
+
+                {/* Public pages - доступні всім без авторизації */}
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contacts" element={<ContactsPage />} />
+
+                {/* Redirect unknown routes to home */}
+                <Route path="*" element={<Navigate to={authUser ? "/" : "/login"} replace />} />
             </Routes>
 
             <Toaster
