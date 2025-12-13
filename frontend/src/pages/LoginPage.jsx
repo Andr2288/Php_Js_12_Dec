@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { Eye, EyeOff, LogIn } from "lucide-react";
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         email: "",
@@ -25,8 +26,10 @@ const LoginPage = () => {
 
         if (result.success) {
             toast.success("Ласкаво просимо!");
+            // Перенаправляємо на головну сторінку
+            navigate("/", { replace: true });
         } else {
-            toast.error(result.error);
+            toast.error(result.error || "Помилка входу");
         }
     };
 

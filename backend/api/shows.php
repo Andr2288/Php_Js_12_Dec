@@ -1,5 +1,5 @@
 <?php
-require_once '../config/database.php';
+require_once __DIR__ . '/../config/database.php';
 
 // CORS Headers
 header('Access-Control-Allow-Origin: http://localhost:5173');
@@ -61,4 +61,3 @@ try {
     http_response_code(500);
     echo json_encode(['error' => 'Failed to fetch shows']);
 }
-?>

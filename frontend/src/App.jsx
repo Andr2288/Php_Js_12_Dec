@@ -20,7 +20,9 @@ const App = () => {
         checkAuth();
     }, [checkAuth]);
 
-    if (isCheckingAuth && !authUser) {
+    console.log("App render - authUser:", authUser, "isCheckingAuth:", isCheckingAuth);
+
+    if (isCheckingAuth) {
         return (
             <div className="flex items-center justify-center h-screen bg-slate-50">
                 <Loader className="size-10 animate-spin text-red-600" />
@@ -35,27 +37,27 @@ const App = () => {
             <Routes>
                 <Route
                     path="/"
-                    element={authUser ? <HomePage /> : <Navigate to="/login" />}
+                    element={authUser ? <HomePage /> : <Navigate to="/login" replace />}
                 />
                 <Route
                     path="/signup"
-                    element={!authUser ? <SignUpPage /> : <Navigate to="/" />}
+                    element={!authUser ? <SignUpPage /> : <Navigate to="/" replace />}
                 />
                 <Route
                     path="/login"
-                    element={!authUser ? <LoginPage /> : <Navigate to="/" />}
+                    element={!authUser ? <LoginPage /> : <Navigate to="/" replace />}
                 />
                 <Route
                     path="/profile"
-                    element={authUser ? <ProfilePage /> : <Navigate to="/login" />}
+                    element={authUser ? <ProfilePage /> : <Navigate to="/login" replace />}
                 />
                 <Route
                     path="/booking/:showId"
-                    element={authUser ? <BookingPage /> : <Navigate to="/login" />}
+                    element={authUser ? <BookingPage /> : <Navigate to="/login" replace />}
                 />
                 <Route
                     path="/booking-confirmation/:bookingId"
-                    element={authUser ? <BookingConfirmationPage /> : <Navigate to="/login" />}
+                    element={authUser ? <BookingConfirmationPage /> : <Navigate to="/login" replace />}
                 />
             </Routes>
 

@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { Eye, EyeOff, UserPlus } from "lucide-react";
 import toast from "react-hot-toast";
 
 const SignUpPage = () => {
+    const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
@@ -48,8 +49,10 @@ const SignUpPage = () => {
 
         if (result.success) {
             toast.success("Реєстрація успішна! Ласкаво просимо!");
+            // Перенаправляємо на головну сторінку
+            navigate("/", { replace: true });
         } else {
-            toast.error(result.error);
+            toast.error(result.error || "Помилка реєстрації");
         }
     };
 

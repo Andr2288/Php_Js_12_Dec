@@ -11,9 +11,15 @@ export const useAuthStore = create((set) => ({
     checkAuth: async () => {
         try {
             const res = await axiosInstance.get("/auth/check");
-            set({authUser: res.data.user});
+
+            if (res.data.authenticated) {
+                set({authUser: res.data.user});
+            } else {
+                set({authUser: null});
+            }
         }
         catch (error) {
+            console.error("Check auth error:", error);
             set({authUser: null});
         }
         finally {
@@ -25,13 +31,22 @@ export const useAuthStore = create((set) => ({
         set({isSigningUp: true});
         try {
             const res = await axiosInstance.post("/auth/register", userData);
-            set({authUser: res.data.user});
-            return { success: true };
-        }
-        catch (error) {
+
+            if (res.data.success && res.data.user) {
+                set({authUser: res.data.user});
+                return { success: true };
+            }
+
             return {
                 success: false,
-                error: error.response?.data?.error || "Registration failed"
+                error: "Помилка реєстрації"
+            };
+        }
+        catch (error) {
+            console.error("Signup error:", error);
+            return {
+                success: false,
+                error: error.response?.data?.error || "Помилка реєстрації"
             };
         }
         finally {
@@ -42,14 +57,27 @@ export const useAuthStore = create((set) => ({
     login: async (userData) => {
         set({isLoggingIn: true});
         try {
+            console.log("Login attempt with:", userData.email);
             const res = await axiosInstance.post("/auth/login", userData);
-            set({authUser: res.data.user});
-            return { success: true };
-        }
-        catch (error) {
+
+            console.log("Login response:", res.data);
+
+            if (res.data.success && res.data.user) {
+                console.log("Setting authUser:", res.data.user);
+                set({authUser: res.data.user});
+                return { success: true };
+            }
+
             return {
                 success: false,
-                error: error.response?.data?.error || "Login failed"
+                error: "Помилка входу"
+            };
+        }
+        catch (error) {
+            console.error("Login error:", error);
+            return {
+                success: false,
+                error: error.response?.data?.error || "Невірний email або пароль"
             };
         }
         finally {
@@ -60,11 +88,11 @@ export const useAuthStore = create((set) => ({
     logout: async () => {
         try {
             await axiosInstance.post("/auth/logout");
+            set({authUser: null});
         }
         catch (error) {
-            console.log("Logout error:", error);
-        }
-        finally {
+            console.error("Logout error:", error);
+            // Навіть якщо запит не вдався, очищаємо стан
             set({authUser: null});
         }
     }
