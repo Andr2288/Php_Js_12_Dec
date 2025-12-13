@@ -1,11 +1,7 @@
 <?php
 session_start();
 
-require_once '../config/cors.php';
-
-// Set CORS headers
-setCorsHeaders();
-handlePreflight();
+header('Content-Type: application/json; charset=utf-8');
 
 // Check request method
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

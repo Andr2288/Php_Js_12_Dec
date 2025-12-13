@@ -1,12 +1,9 @@
 <?php
 session_start();
 
-require_once '../config/cors.php';
 require_once '../config/database.php';
 
-// Set CORS headers
-setCorsHeaders();
-handlePreflight();
+header('Content-Type: application/json; charset=utf-8');
 
 // Check authentication
 if (!isset($_SESSION['user_id'])) {
