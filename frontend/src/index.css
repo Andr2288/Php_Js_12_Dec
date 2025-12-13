@@ -1,2 +1,7 @@
 @import "tailwindcss";
 @plugin "daisyui";
+
+/* Body padding to account for fixed navbar */
+body {
+    padding-top: 64px; /* 4rem = 64px для fixed navbar */
+}

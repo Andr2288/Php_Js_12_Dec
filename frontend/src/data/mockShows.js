@@ -1,0 +1,80 @@
+export const mockShows = [
+    {
+        id: 1,
+        title: "Марлен Дітріх",
+        date: "2024-12-22T18:00:00",
+        scene_type: "main",
+        price_high: 500,
+        price_mid: 375,
+        price_low: 250,
+        genre: "Драма",
+        period_setting: "XX століття",
+        poster: "/images/marlen.jpg",
+        description: "Біографічна драма про легендарну актрису"
+    },
+    {
+        id: 2,
+        title: "Чикаго",
+        date: "2024-12-25T19:00:00",
+        scene_type: "main",
+        price_high: 600,
+        price_mid: 450,
+        price_low: 300,
+        genre: "Мюзикл",
+        period_setting: "XX століття",
+        poster: "/images/chicago.jpg",
+        description: "Класичний американський мюзикл"
+    },
+    {
+        id: 3,
+        title: "Ромео і Джульєтта",
+        date: "2024-12-29T18:00:00",
+        scene_type: "chamber",
+        price_high: 650,
+        price_mid: 500,
+        price_low: 350,
+        genre: "Трагедія",
+        period_setting: "Відродження",
+        poster: "/images/romeo.jpg",
+        description: "Безсмертна трагедія Шекспіра"
+    },
+    {
+        id: 4,
+        title: "Вірні дружини",
+        date: "2025-01-03T19:30:00",
+        scene_type: "main",
+        price_high: 400,
+        price_mid: 335,
+        price_low: 270,
+        genre: "Комедія",
+        period_setting: "XVIII століття",
+        poster: "/images/wives.jpg",
+        description: "Дотепна комедія про подружнє життя"
+    },
+    {
+        id: 5,
+        title: "Кабаре",
+        date: "2025-01-16T17:00:00",
+        scene_type: "main",
+        price_high: 650,
+        price_mid: 525,
+        price_low: 400,
+        genre: "Мюзикл",
+        period_setting: "XX століття",
+        poster: "/images/cabaret.jpg",
+        description: "Провокативний мюзикл про життя в кабаре"
+    },
+    {
+        id: 6,
+        title: "Готель двох світів",
+        date: "2025-01-27T19:00:00",
+        scene_type: "chamber",
+        price_high: 400,
+        price_mid: 325,
+        price_low: 250,
+        genre: "Містика",
+        period_setting: "Сучасність",
+        poster: "/images/hotel.jpg",
+        description: "Містична драма про межі реальності"
+    }
+];
