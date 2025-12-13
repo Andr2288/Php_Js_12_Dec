@@ -9,6 +9,7 @@ import ProfilePage from "./pages/ProfilePage";
 import HomePage from "./pages/HomePage";
 import BookingPage from "./pages/BookingPage";
 import BookingConfirmationPage from "./pages/BookingConfirmationPage";
+import ShowDetailPage from "./pages/ShowDetailPage";
 
 import { useAuthStore } from "./store/useAuthStore";
 import { Loader } from "lucide-react";
@@ -50,6 +51,10 @@ const App = () => {
                 <Route
                     path="/profile"
                     element={authUser ? <ProfilePage /> : <Navigate to="/login" replace />}
+                />
+                <Route
+                    path="/show/:showId"
+                    element={authUser ? <ShowDetailPage /> : <Navigate to="/login" replace />}
                 />
                 <Route
                     path="/booking/:showId"

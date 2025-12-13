@@ -4,14 +4,14 @@ const SeatGrid = ({ sceneType = "main" }) => {
     const { selectedSeats, bookedSeats, toggleSeat } = useBookingStore();
 
     // Configuration based on scene type
-    const config = sceneType === "main" 
+    const config = sceneType === "main"
         ? { totalRows: 10, seatsPerRow: 20, gapAfter: 10 }
         : { totalRows: 4, seatsPerRow: 10, gapAfter: 5 };
 
     const { totalRows, seatsPerRow, gapAfter } = config;
 
     const getSeatStatus = (row, seat) => {
-        const isBooked = bookedSeats.some(bookedSeat => 
+        const isBooked = bookedSeats.some(bookedSeat =>
             bookedSeat.row === row && bookedSeat.seat === seat
         );
         const isSelected = selectedSeats.some(selectedSeat =>
@@ -24,9 +24,17 @@ const SeatGrid = ({ sceneType = "main" }) => {
     };
 
     const getSeatPrice = (row) => {
-        if (row <= 3) return "high";
-        if (row <= 7) return "mid";
-        return "low";
+        if (sceneType === "chamber") {
+            // Камерна сцена: 1 ряд - висока, 2-3 ряди - середня, 4 ряд - низька
+            if (row === 1) return "high";
+            if (row <= 3) return "mid";
+            return "low";
+        } else {
+            // Основна сцена: 1-3 ряди - висока, 4-7 ряди - середня, 8+ ряди - низька
+            if (row <= 3) return "high";
+            if (row <= 7) return "mid";
+            return "low";
+        }
     };
 
     const handleSeatClick = (row, seat) => {
@@ -65,7 +73,7 @@ const SeatGrid = ({ sceneType = "main" }) => {
                                         {seatNum === gapAfter + 1 && (
                                             <div className="w-8" />
                                         )}
-                                        
+
                                         <button
                                             onClick={() => handleSeatClick(rowNum, seatNum)}
                                             disabled={status === "booked"}
@@ -90,7 +98,7 @@ const SeatGrid = ({ sceneType = "main" }) => {
 
                 {/* Horizontal gap for main scene */}
                 {sceneType === "main" && (
-                    <div className="absolute left-1/2 -translate-x-1/2" 
+                    <div className="absolute left-1/2 -translate-x-1/2"
                          style={{ top: `${(6 * 36)}px` }}>
                         <div className="h-6 w-full" />
                     </div>
@@ -101,15 +109,21 @@ const SeatGrid = ({ sceneType = "main" }) => {
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
                 <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 bg-red-100 border-2 border-red-200 rounded-full"></div>
-                    <span>Високі ціни (ряди 1-3)</span>
+                    <span>
+                        Високі ціни {sceneType === "chamber" ? "(ряд 1)" : "(ряди 1-3)"}
+                    </span>
                 </div>
                 <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 bg-yellow-100 border-2 border-yellow-200 rounded-full"></div>
-                    <span>Середні ціни (ряди 4-7)</span>
+                    <span>
+                        Середні ціни {sceneType === "chamber" ? "(ряди 2-3)" : "(ряди 4-7)"}
+                    </span>
                 </div>
                 <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 bg-green-100 border-2 border-green-200 rounded-full"></div>
-                    <span>Низькі ціни (ряди 8+)</span>
+                    <span>
+                        Низькі ціни {sceneType === "chamber" ? "(ряд 4)" : "(ряди 8+)"}
+                    </span>
                 </div>
                 <div className="flex items-center space-x-2">
                     <div className="w-4 h-4 bg-red-600 rounded-full"></div>

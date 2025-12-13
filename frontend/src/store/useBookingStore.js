@@ -81,13 +81,24 @@ export const useBookingStore = create((set, get) => ({
 
         let total = 0;
         selectedSeats.forEach(seat => {
-            // Price based on row
-            if (seat.row <= 3) {
-                total += parseFloat(currentShow.price_high);
-            } else if (seat.row <= 7) {
-                total += parseFloat(currentShow.price_mid);
+            if (currentShow.scene_type === "chamber") {
+                // Камерна сцена: 1 ряд - висока, 2-3 ряди - середня, 4 ряд - низька
+                if (seat.row === 1) {
+                    total += parseFloat(currentShow.price_high);
+                } else if (seat.row <= 3) {
+                    total += parseFloat(currentShow.price_mid);
+                } else {
+                    total += parseFloat(currentShow.price_low);
+                }
             } else {
-                total += parseFloat(currentShow.price_low);
+                // Основна сцена: 1-3 ряди - висока, 4-7 ряди - середня, 8+ ряди - низька
+                if (seat.row <= 3) {
+                    total += parseFloat(currentShow.price_high);
+                } else if (seat.row <= 7) {
+                    total += parseFloat(currentShow.price_mid);
+                } else {
+                    total += parseFloat(currentShow.price_low);
+                }
             }
         });
         return total;

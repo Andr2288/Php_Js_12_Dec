@@ -71,7 +71,7 @@ try {
         }
 
         // Check if show exists
-        $stmt = $pdo->prepare("SELECT id, price_high, price_mid, price_low FROM shows WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT id, scene_type, price_high, price_mid, price_low FROM shows WHERE id = ?");
         $stmt->execute([$showId]);
         $show = $stmt->fetch();
 
@@ -98,18 +98,35 @@ try {
             // Insert bookings
             $bookingIds = [];
             foreach ($seats as $seat) {
-                // Determine price based on row
-                $price = $show['price_low']; // Default
-                if ($seat['row'] <= 3) {
-                    $price = $show['price_high'];
-                } elseif ($seat['row'] <= 7) {
-                    $price = $show['price_mid'];
+                // Determine price based on row and scene type
+                if ($show['scene_type'] === 'chamber') {
+                    // Камерна сцена: 1 ряд - висока, 2-3 ряди - середня, 4 ряд - низька
+                    if ($seat['row'] === 1) {
+                        $price = $show['price_high'];
+                    } elseif ($seat['row'] <= 3) {
+                        $price = $show['price_mid'];
+                    } else {
+                        $price = $show['price_low'];
+                    }
+                } else {
+                    // Основна сцена: 1-3 ряди - висока, 4-7 ряди - середня, 8+ ряди - низька
+                    if ($seat['row'] <= 3) {
+                        $price = $show['price_high'];
+                    } elseif ($seat['row'] <= 7) {
+                        $price = $show['price_mid'];
+                    } else {
+                        $price = $show['price_low'];
+                    }
                 }
 
                 $stmt = $pdo->prepare("INSERT INTO bookings (user_id, show_id, seat_row, seat_number, price) VALUES (?, ?, ?, ?, ?)");
                 $stmt->execute([$userId, $showId, $seat['row'], $seat['seat'], $price]);
                 $bookingIds[] = $pdo->lastInsertId();
             }
+
+            // Додаємо запис про взаємодію користувача (для рекомендацій)
+            $stmt = $pdo->prepare("INSERT INTO user_interactions (user_id, show_id, interaction_type) VALUES (?, ?, 'attempt_book')");
+            $stmt->execute([$userId, $showId]);
 
             $pdo->commit();
 

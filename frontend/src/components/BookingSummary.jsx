@@ -3,19 +3,19 @@ import { Calendar, MapPin, Clock, CreditCard, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const BookingSummary = ({ onBookingComplete }) => {
-    const { 
-        selectedSeats, 
-        currentShow, 
-        calculateTotal, 
-        clearSelection, 
-        submitBooking, 
-        isLoading 
+    const {
+        selectedSeats,
+        currentShow,
+        calculateTotal,
+        clearSelection,
+        submitBooking,
+        isLoading
     } = useBookingStore();
 
     if (!currentShow) return null;
 
     const total = calculateTotal();
-    
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         return date.toLocaleDateString('uk-UA', {
@@ -29,9 +29,17 @@ const BookingSummary = ({ onBookingComplete }) => {
     const sceneTypeText = currentShow.scene_type === 'main' ? 'Основна сцена' : 'Камерна сцена';
 
     const getSeatPrice = (row) => {
-        if (row <= 3) return currentShow.price_high;
-        if (row <= 7) return currentShow.price_mid;
-        return currentShow.price_low;
+        if (currentShow.scene_type === "chamber") {
+            // Камерна сцена: 1 ряд - висока, 2-3 ряди - середня, 4 ряд - низька
+            if (row === 1) return currentShow.price_high;
+            if (row <= 3) return currentShow.price_mid;
+            return currentShow.price_low;
+        } else {
+            // Основна сцена: 1-3 ряди - висока, 4-7 ряди - середня, 8+ ряди - низька
+            if (row <= 3) return currentShow.price_high;
+            if (row <= 7) return currentShow.price_mid;
+            return currentShow.price_low;
+        }
     };
 
     const handleBooking = async () => {
@@ -41,7 +49,7 @@ const BookingSummary = ({ onBookingComplete }) => {
         }
 
         const result = await submitBooking();
-        
+
         if (result.success) {
             toast.success("Бронювання успішне!");
             if (onBookingComplete) {
@@ -63,7 +71,7 @@ const BookingSummary = ({ onBookingComplete }) => {
                 {/* Show Info */}
                 <div className="space-y-3">
                     <h4 className="font-semibold text-red-600 text-lg">{currentShow.title}</h4>
-                    
+
                     <div className="space-y-2 text-sm text-gray-600">
                         <div className="flex items-center space-x-2">
                             <Calendar size={16} />

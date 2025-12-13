@@ -32,6 +32,16 @@ if (strpos($uri, '/api/') === 0) {
         require __DIR__ . '/api/bookings.php';
         exit;
     }
+
+    if ($route === 'user-bookings' || $route === 'user-bookings.php') {
+        require __DIR__ . '/api/user-bookings.php';
+        exit;
+    }
+
+    if ($route === 'recommendations' || $route === 'recommendations.php') {
+        require __DIR__ . '/api/recommendations.php';
+        exit;
+    }
 }
 
 // Route auth requests

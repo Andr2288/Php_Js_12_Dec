@@ -1,5 +1,6 @@
 import { Calendar, MapPin, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { axiosInstance } from "../lib/axios";
 
 const ShowCard = ({ show }) => {
     const formatDate = (dateString) => {
@@ -13,6 +14,27 @@ const ShowCard = ({ show }) => {
     };
 
     const sceneTypeText = show.scene_type === 'main' ? 'Основна сцена' : 'Камерна сцена';
+
+    // Функція для запису взаємодії
+    const trackInteraction = async (interactionType) => {
+        try {
+            await axiosInstance.post('/api/shows.php', {
+                show_id: show.id,
+                interaction_type: interactionType
+            });
+        } catch (error) {
+            // Тихо ігноруємо помилки відстеження
+            console.debug('Interaction tracking error:', error);
+        }
+    };
+
+    const handleBookingClick = () => {
+        trackInteraction('attempt_book');
+    };
+
+    const handleDetailsClick = () => {
+        trackInteraction('view');
+    };
 
     return (
         <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 group">
@@ -73,12 +95,14 @@ const ShowCard = ({ show }) => {
                 <div className="flex gap-3">
                     <Link
                         to={`/booking/${show.id}`}
+                        onClick={handleBookingClick}
                         className="flex-1 bg-red-600 hover:bg-red-700 text-white text-center py-3 px-4 rounded-lg font-medium transition-colors"
                     >
                         Купити квиток
                     </Link>
                     <Link
                         to={`/show/${show.id}`}
+                        onClick={handleDetailsClick}
                         className="border border-gray-300 hover:border-red-600 hover:text-red-600 text-gray-700 text-center py-3 px-4 rounded-lg font-medium transition-colors"
                     >
                         Детальніше
