@@ -55,6 +55,9 @@ class DatabaseManager {
     private function createTables() {
         echo "  📋 Створюємо таблиці...\n";
 
+        // Вимикаємо перевірку foreign key для створення таблиць
+        $this->pdo->exec("SET FOREIGN_KEY_CHECKS = 0");
+
         $tables = [
             // Users table
             "CREATE TABLE IF NOT EXISTS users (
@@ -90,9 +93,11 @@ class DatabaseManager {
                 seat_number INT NOT NULL,
                 price DECIMAL(10,2) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id),
-                FOREIGN KEY (show_id) REFERENCES shows(id),
-                UNIQUE KEY unique_seat (show_id, seat_row, seat_number)
+                INDEX idx_user_id (user_id),
+                INDEX idx_show_id (show_id),
+                UNIQUE KEY unique_seat (show_id, seat_row, seat_number),
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (show_id) REFERENCES shows(id) ON DELETE CASCADE
             )",
 
             // User interactions table
@@ -102,8 +107,10 @@ class DatabaseManager {
                 show_id INT NOT NULL,
                 interaction_type ENUM('view', 'bookmark', 'attempt_book') NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (user_id) REFERENCES users(id),
-                FOREIGN KEY (show_id) REFERENCES shows(id)
+                INDEX idx_user_interactions_user_id (user_id),
+                INDEX idx_user_interactions_show_id (show_id),
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                FOREIGN KEY (show_id) REFERENCES shows(id) ON DELETE CASCADE
             )"
         ];
 
@@ -111,40 +118,10 @@ class DatabaseManager {
             $this->pdo->exec($sql);
         }
 
-        echo "  🔗 Створюємо індекси...\n";
+        // Вмикаємо назад перевірку foreign key
+        $this->pdo->exec("SET FOREIGN_KEY_CHECKS = 1");
 
-        // Створення індексів з правильним синтаксисом MySQL
-        $this->createIndexIfNotExists('idx_shows_date', 'shows', 'date');
-        $this->createIndexIfNotExists('idx_shows_scene_type', 'shows', 'scene_type');
-        $this->createIndexIfNotExists('idx_bookings_user_id', 'bookings', 'user_id');
-        $this->createIndexIfNotExists('idx_bookings_show_id', 'bookings', 'show_id');
-        $this->createIndexIfNotExists('idx_user_interactions_user_id', 'user_interactions', 'user_id');
-    }
-
-    private function createIndexIfNotExists($indexName, $tableName, $columnName) {
-        try {
-            // Перевіряємо чи існує індекс
-            $stmt = $this->pdo->prepare("
-                SELECT COUNT(*) as count 
-                FROM information_schema.statistics 
-                WHERE table_schema = DATABASE() 
-                AND table_name = ? 
-                AND index_name = ?
-            ");
-            $stmt->execute([$tableName, $indexName]);
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($result['count'] == 0) {
-                // Індекс не існує, створюємо
-                $sql = "CREATE INDEX {$indexName} ON {$tableName}({$columnName})";
-                $this->pdo->exec($sql);
-                echo "    ✅ Індекс {$indexName} створено\n";
-            } else {
-                echo "    ⏭️ Індекс {$indexName} вже існує\n";
-            }
-        } catch (PDOException $e) {
-            echo "    ⚠️ Помилка створення індексу {$indexName}: " . $e->getMessage() . "\n";
-        }
+        echo "  🔗 Таблиці та індекси створено успішно!\n";
     }
 
     public function dropDatabase() {
@@ -261,21 +238,6 @@ class DatabaseManager {
                 $stmt->execute([$user[0], $hashedPassword, $user[2]]);
             }
 
-            // Додавання тестових бронювань
-            echo "  🎫 Додаємо тестові бронювання...\n";
-            $bookingsData = [
-                [1, 1, 5, 10, 375], // User 1, Show 1, Row 5, Seat 10, Mid price
-                [1, 2, 3, 5, 450],  // User 1, Show 2, Row 3, Seat 5, Mid price
-                [2, 1, 1, 15, 500], // User 2, Show 1, Row 1, Seat 15, High price
-                [2, 4, 2, 3, 500]   // User 2, Show 4, Row 2, Seat 3, Mid price (chamber)
-            ];
-
-            $stmt = $this->pdo->prepare("INSERT INTO bookings (user_id, show_id, seat_row, seat_number, price) VALUES (?, ?, ?, ?, ?)");
-
-            foreach ($bookingsData as $booking) {
-                $stmt->execute($booking);
-            }
-
             echo "\n✅ Тестові дані успішно додані!\n";
             echo "📝 Тестові користувачі:\n";
             echo "  - admin@theater.com / admin123\n";
@@ -307,15 +269,6 @@ if (php_sapi_name() === 'cli') {
     echo "====================================\n";
     echo "📂 Поточна директорія: " . __DIR__ . "\n";
     echo "📝 Файл конфігурації: " . __DIR__ . "/backend/config/database.php\n\n";
-
-    // Перевірка наявності конфігураційного файлу
-    if (!file_exists(__DIR__ . '/backend/config/database.php')) {
-        echo "⚠️  УВАГА: Файл backend/config/database.php не знайдено!\n";
-        echo "💡 Переконайтесь, що структура проекту правильна:\n";
-        echo "   project/\n";
-        echo "   ├── database_manager.php\n";
-        echo "   └── backend/config/database.php\n\n";
-    }
 
     $manager = new DatabaseManager();
 
